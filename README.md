@@ -1,1 +1,1 @@
-# qs-trimmer
+# just-toss
