@@ -1,1 +1,1 @@
-# query-string-trimmer
+# qs-trimmer
