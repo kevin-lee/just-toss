@@ -1,8 +1,16 @@
-enablePlugins(ScalaJSBundlerPlugin)
 
-name := "just-toss"
+enablePlugins(ScalaJSBundlerPlugin, GitHubPagesPlugin)
+
+lazy val GitHubUsername = "Kevin-Lee"
+lazy val GitHubRepoName = "just-toss"
+
+name := GitHubRepoName
 
 scalaVersion := "2.13.3"
+
+gitHubPagesOrgName := GitHubUsername
+gitHubPagesRepoName := GitHubRepoName
+gitHubPagesSiteDir := baseDirectory.value / "build"
 
 npmDevDependencies in Compile += "html-webpack-plugin" -> "4.3.0"
 npmDevDependencies in Compile += "copy-webpack-plugin" -> "5.1.1"
@@ -27,5 +35,7 @@ webpackBundlingMode in fastOptJS := BundlingMode.LibraryOnly()
 requireJsDomEnv in Test := true
 
 addCommandAlias("dev", ";fastOptJS::startWebpackDevServer;~fastOptJS")
+
+addCommandAlias("devBuild", ";fastOptJS::startWebpackDevServer;fastOptJS")
 
 addCommandAlias("build", "fullOptJS::webpack")
