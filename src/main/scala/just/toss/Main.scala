@@ -19,6 +19,7 @@ object Main {
       val newSite = for {
         paramValue <- paramMap.get("site")
         site <- paramValue.headOption
+        if site.trim.nonEmpty // String.isBlank is not available in Scala.js
       } yield Url.parse(site)
 
       println(
