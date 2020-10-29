@@ -22,6 +22,14 @@ object Main {
         if site.trim.nonEmpty // String.isBlank is not available in Scala.js
       } yield Url.parse(site)
 
+      val debugMode = (for {
+        debugMode <- paramMap.get("debug")
+        debugValue <- debugMode.headOption
+      } yield debugValue).fold(false) {
+        case "true" => true
+        case _ => false
+      }
+
       println(
         s"""      event: $event
            |   location: $location
@@ -30,7 +38,10 @@ object Main {
            |   paramMap: ${uri.query.paramMap}
            |    newSite: ${newSite.map(_.toString)}
            |""".stripMargin)
-      newSite.map(_.toString).fold(())(dom.window.location.href = _)
+      newSite
+        .filter(_ => !debugMode)
+        .map(_.toString)
+        .fold(())(dom.window.location.href = _)
     }
 
     dom.window.onload = relocate
