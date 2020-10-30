@@ -30,20 +30,27 @@ object Main {
         case _ => false
       }
 
+      val toSiteString: Uri => String =
+        uri =>
+          uri.schemeOption
+            .filter(_.startsWith("http"))
+            .fold(s"https://${uri.toString}")(_ => uri.toString)
+
       println(
         s"""      event: $event
            |   location: $location
            |        uri: $uri
+           |     schema: ${uri.schemeOption}
+           | new schema: ${newSite.flatMap(_.schemeOption)}
            |      query: ${uri.query}
            |   fragment: ${uri.fragment}
            |   no query: ${uri.removeQueryString()}
            |   paramMap: ${uri.query.paramMap}
-           |    newSite: ${newSite.map(_.toString)}
+           |    newSite: ${newSite.map(toSiteString)}
            |""".stripMargin)
       newSite
         .filter(_ => !debugMode)
-        .map(_.toString)
-        .fold(())(dom.window.location.href = _)
+        .fold(())(uri => dom.window.location.href = toSiteString(uri))
     }
 
     dom.window.onload = relocate
