@@ -13,14 +13,14 @@ object Main {
     val relocate: Event => Unit = event => {
       import io.lemonlabs.uri._
       val location = dom.window.location.href
-
       val uri = Url.parse(location)
       val paramMap = uri.query.paramMap
+
       val newSite = for {
-        paramValue <- paramMap.get("site")
-        site <- paramValue.headOption
-        if site.trim.nonEmpty // String.isBlank is not available in Scala.js
-      } yield Url.parse(site)
+        hashVal <- uri.fragment
+        if hashVal.trim.nonEmpty
+        site = Url.parse(hashVal)
+      } yield site
 
       val debugMode = (for {
         debugMode <- paramMap.get("debug")
@@ -34,7 +34,9 @@ object Main {
         s"""      event: $event
            |   location: $location
            |        uri: $uri
-           |uri - query: ${uri.removeQueryString()}
+           |      query: ${uri.query}
+           |   fragment: ${uri.fragment}
+           |   no query: ${uri.removeQueryString()}
            |   paramMap: ${uri.query.paramMap}
            |    newSite: ${newSite.map(_.toString)}
            |""".stripMargin)
