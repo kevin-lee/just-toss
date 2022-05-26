@@ -1,4 +1,4 @@
-name: Build-All
+name: "Build All"
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         scala:
-          - { name: "Scala", version: "2.13.3",  binary-version: "2.13", java-version: "11" }
+          - { name: "Scala", version: "2.13.8",  binary-version: "2.13", java-version: "11" }
 
     steps:
       - uses: actions/checkout@v2

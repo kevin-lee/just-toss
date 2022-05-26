@@ -1,19 +1,20 @@
-name: Publish GitHub Pages
+name: "[M] Publish Site"
 
 on:
-  push:
-    branches:
-      - publish-docs
+  workflow_dispatch:
 
 jobs:
-  build:
+  build_and_publish_doc_site:
+    if: github.ref != 'refs/heads/gh-pages' && github.ref != 'gh-pages'
 
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         scala:
-          - { version: "2.13.3", binary-version: "2.13", java-version: "11" }
+          - { version: "2.13.8", binary-version: "2.13", java-version: "11" }
+        node:
+          - { version: "14.16.0" }
 
     steps:
       - uses: actions/checkout@v2
@@ -22,7 +23,7 @@ jobs:
           java-version: ${{ matrix.scala.java-version }}
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.4.0'
+          node-version: ${{ matrix.node.version }}
           registry-url: 'https://registry.npmjs.org'
 
       - name: Cache Coursier
