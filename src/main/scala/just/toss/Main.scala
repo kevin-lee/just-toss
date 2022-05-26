@@ -1,7 +1,7 @@
 package just.toss
 
 import org.scalajs.dom
-import org.scalajs.dom.raw.Event
+import org.scalajs.dom.Event
 
 import scala.scalajs.js.annotation.JSExportTopLevel
 
