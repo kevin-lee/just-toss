@@ -3,7 +3,7 @@ if (process.env.NODE_ENV === "production") {
     opt.main();
     module.exports = opt;
 } else {
-    var exports = window;
+    const exports = window;
     exports.require = require("./just-toss-fastopt-entrypoint.js").require;
     window.global = window;
 

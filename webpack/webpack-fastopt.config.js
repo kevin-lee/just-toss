@@ -1,12 +1,12 @@
-var merge = require('webpack-merge');
-var core = require('./webpack-core.config.js')
+const { merge } = require('webpack-merge');
+const core = require('./webpack-core.config.js')
 
-var generatedConfig = require("./scalajs.webpack.config.js");
+const generatedConfig = require("./scalajs.webpack.config.js");
 const entries = {};
 entries[Object.keys(generatedConfig.entry)[0]] = "scalajs";
 
 module.exports = merge(core, {
-  devtool: "cheap-module-eval-source-map",
+  devtool: "eval-cheap-module-source-map",
   entry: entries,
   module: {
     noParse: (content) => {

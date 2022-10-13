@@ -5,7 +5,7 @@ lazy val GitHubRepoName = "just-toss"
 
 name := GitHubRepoName
 
-scalaVersion := "2.13.8"
+scalaVersion := "2.13.10"
 
 lazy val start = TaskKey[Unit]("start")
 lazy val stop = TaskKey[Unit]("stop")
@@ -19,14 +19,14 @@ lazy val justToss = (project in file("."))
     gitHubPagesRepoName := GitHubRepoName,
     gitHubPagesSiteDir := baseDirectory.value / "build",
     (Compile / npmDevDependencies) ++= List(
-      "html-webpack-plugin" -> "4.3.0",
-      "copy-webpack-plugin" -> "5.1.1",
-      "webpack-merge" -> "4.2.2",
+      "html-webpack-plugin" -> "4.5.1",
+      "copy-webpack-plugin" -> "6.4.0",
+      "webpack-merge" -> "5.8.0",
     ),
     libraryDependencies += "io.lemonlabs" %%% "scala-uri" % "4.0.2",
     scalacOptions += "-Ymacro-annotations",
-    (webpack / version) := "4.43.0",
-    (startWebpackDevServer / version) := "3.11.0",
+    (webpack / version) := "4.44.2",
+    (startWebpackDevServer / version) := "4.5.0",
     webpackResources := baseDirectory.value / "webpack" * "*",
     useYarn := true,
     webpackDevServerPort := 8888,
