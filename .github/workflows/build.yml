@@ -19,12 +19,18 @@ jobs:
       matrix:
         scala:
           - { name: "Scala", version: "2.13.10",  binary-version: "2.13", java-version: "17" }
+        node:
+          - { version: "16.16.0" }
 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.scala.java-version }}
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node.version }}
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Cache Coursier
         uses: actions/cache@v1
