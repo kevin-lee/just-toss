@@ -14,6 +14,14 @@ project/plugins/project/
 ### sbt
 .bsp/
 
+### Metals and Bloop
+.metals/
+.bloop/
+metals.sbt
+
+### VS Code
+.vscode/
+
 ### Eclipse template
 
 .metadata
@@ -71,3 +79,4 @@ out/
 ### Node
 package-lock.json
 yarn.lock
+build/

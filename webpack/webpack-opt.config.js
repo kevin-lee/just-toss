@@ -9,6 +9,9 @@ entries[Object.keys(generatedConfig.entry)[0]] = "scalajs";
 
 module.exports = merge(core, {
   mode: "production",
+  performance: {
+    hints: false,
+  },
   devtool: "source-map",
   entry: entries,
   output: {
