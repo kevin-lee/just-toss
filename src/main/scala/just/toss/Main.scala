@@ -1,55 +1,21 @@
 package just.toss
 
 import org.scalajs.dom
-import org.scalajs.dom.Event
 
 object Main {
 
-  def main(args: Array[String]): Unit = {
-
-    val relocate: Event => Unit = event => {
-      import io.lemonlabs.uri._
-      val location = dom.window.location.href
-      val uri = Url.parse(location)
-      val paramMap = uri.query.paramMap
-
-      val newSite = for {
-        hashVal <- uri.fragment
-        if hashVal.trim.nonEmpty
-        site = Url.parse(hashVal)
-      } yield site
-
-      val debugMode = (for {
-        debugMode <- paramMap.get("debug")
-        debugValue <- debugMode.headOption
-      } yield debugValue).fold(false) {
-        case "true" => true
-        case _ => false
-      }
-
-      val toSiteString: Uri => String =
-        uri =>
-          uri.schemeOption
-            .filter(_.startsWith("http"))
-            .fold(s"https://${uri.toString}")(_ => uri.toString)
+  def main(args: Array[String]): Unit =
+    dom.window.onload = event => {
+      val request = Redirect.request(dom.window.location.href)
 
       println(
         s"""      event: $event
-           |   location: $location
-           |        uri: $uri
-           |     schema: ${uri.schemeOption}
-           | new schema: ${newSite.flatMap(_.schemeOption)}
-           |      query: ${uri.query}
-           |   fragment: ${uri.fragment}
-           |   no query: ${uri.removeQueryString()}
-           |   paramMap: ${uri.query.paramMap}
-           |    newSite: ${newSite.map(toSiteString)}
+           |   location: ${request.location}
+           |   fragment: ${request.fragment}
+           |  debugMode: ${request.debugMode}
+           |    newSite: ${request.site}
            |""".stripMargin)
-      newSite
-        .filter(_ => !debugMode)
-        .fold(())(uri => dom.window.location.href = toSiteString(uri))
-    }
 
-    dom.window.onload = relocate
-  }
+      Redirect.target(request).foreach(site => dom.window.location.href = site)
+    }
 }

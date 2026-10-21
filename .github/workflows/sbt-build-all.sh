@@ -23,6 +23,7 @@ else
       ++${scala_version}! \
       -v \
       clean \
+      test \
       build
   else
     sbt \
@@ -30,6 +31,7 @@ else
       ++${scala_version}! \
       -v \
       clean \
+      test \
       devBuild
   fi
 
