@@ -1,4 +1,4 @@
-enablePlugins(ScalaJSBundlerPlugin, GitHubPagesPlugin)
+enablePlugins(ScalaJSPlugin, GitHubPagesPlugin)
 
 lazy val GitHubUsername = "Kevin-Lee"
 lazy val GitHubRepoName = "just-toss"
@@ -7,42 +7,56 @@ name := GitHubRepoName
 
 scalaVersion := "2.13.18"
 
-lazy val start = TaskKey[Unit]("start")
-lazy val stop = TaskKey[Unit]("stop")
+lazy val devSite = TaskKey[File]("devSite", "Builds the development site into target/dev-site")
+lazy val build = TaskKey[File]("build", "Builds the production site into build/")
 
-start := (Compile / fastOptJS / startWebpackDevServer).value
-stop := (Compile / fastOptJS / stopWebpackDevServer).value
+lazy val start = TaskKey[Unit]("start", "Builds the development site and starts the dev server")
+lazy val stop = TaskKey[Unit]("stop", "Stops the dev server")
+
+lazy val DevServerHost = "0.0.0.0"
+lazy val DevServerPort = 8888
+
+/** Copies the files in `public/` and the Scala.js linker output into `siteDir`. */
+def makeSite(publicDir: File, linkerOutputDir: File, siteDir: File): File = {
+  IO.delete(siteDir)
+  IO.copyDirectory(publicDir, siteDir)
+  IO.copyDirectory(linkerOutputDir, siteDir)
+  siteDir
+}
 
 lazy val justToss = (project in file("."))
   .settings(
     gitHubPagesOrgName := GitHubUsername,
     gitHubPagesRepoName := GitHubRepoName,
     gitHubPagesSiteDir := baseDirectory.value / "build",
-    (Compile / npmDevDependencies) ++= List(
-//      "html-webpack-plugin" -> "4.5.1",
-//      "copy-webpack-plugin" -> "6.4.0",
-//      "webpack-merge" -> "5.8.0",
-      "html-webpack-plugin" -> "5.6.8",
-      "copy-webpack-plugin" -> "14.0.0",
-      "webpack-merge" -> "6.0.1",
-    ),
-    libraryDependencies += "io.lemonlabs" %%% "scala-uri" % "4.0.3",
+    libraryDependencies += "com.indoorvivants" %%% "scala-uri" % "4.2.0",
     scalacOptions += "-Ymacro-annotations",
-//    (webpack / version) := "4.44.2",
-    (webpack / version) := "5.112.0",
-    webpackCliVersion := "7.2.3",
-//    webpackCliVersion := "4.9.1",
-//    (startWebpackDevServer / version) := "4.5.0",
-    (startWebpackDevServer / version) := "6.1.0",
-    webpackResources := baseDirectory.value / "webpack" * "*",
-    webpackDevServerPort := 8888,
-    (fastOptJS / webpackConfigFile) := (baseDirectory.value / "webpack" / "webpack-fastopt.config.js").some,
-    (fullOptJS / webpackConfigFile) := (baseDirectory.value / "webpack" / "webpack-opt.config.js").some,
-    (Test / webpackConfigFile) := (baseDirectory.value / "webpack" / "webpack-core.config.js").some,
-    (fastOptJS / webpackDevServerExtraArgs) := Seq("--host", "0.0.0.0", "--hot"),
-    (fastOptJS / webpackBundlingMode) := BundlingMode.LibraryOnly(),
-    (Test / requireJsDomEnv) := true,
-    addCommandAlias("dev", ";fastOptJS::startWebpackDevServer;~fastOptJS"),
-    addCommandAlias("devBuild", ";fastOptJS::startWebpackDevServer;fastOptJS"),
-    addCommandAlias("build", "fullOptJS::webpack"),
+    scalaJSUseMainModuleInitializer := true,
+    devSite := {
+      val linkerOutputDir = (Compile / fastLinkJS / scalaJSLinkerOutputDirectory).value
+      val _ = (Compile / fastLinkJS).value
+      makeSite(baseDirectory.value / "public", linkerOutputDir, target.value / "dev-site")
+    },
+    build := {
+      val linkerOutputDir = (Compile / fullLinkJS / scalaJSLinkerOutputDirectory).value
+      val _ = (Compile / fullLinkJS).value
+      makeSite(baseDirectory.value / "public", linkerOutputDir, gitHubPagesSiteDir.value)
+    },
+    watchSources += WatchSource(baseDirectory.value / "public"),
+    start := {
+      val siteDir = devSite.value
+      DevServer.start(siteDir.toPath, DevServerHost, DevServerPort)
+      streams.value.log.info(s"Dev server is running at http://localhost:$DevServerPort/")
+    },
+    stop := {
+      DevServer.stop()
+      streams.value.log.info("Dev server is stopped")
+    },
+    addCommandAlias("dev", ";start;~devSite"),
+    addCommandAlias("devBuild", "devSite"),
   )
+
+Global / onUnload := (Global / onUnload).value.andThen { state =>
+  DevServer.stop()
+  state
+}

@@ -19,8 +19,6 @@ jobs:
       matrix:
         scala:
           - { name: "Scala", version: "2.13.18",  binary-version: "2.13", java-version: "17" }
-        node:
-          - { version: "24" }
 
     steps:
       - uses: actions/checkout@v7
@@ -30,10 +28,6 @@ jobs:
           java-version: ${{ matrix.scala.java-version }}
           cache: "sbt"
       - uses: sbt/setup-sbt@v1
-      - uses: actions/setup-node@v7
-        with:
-          node-version: ${{ matrix.node.version }}
-          cache: "npm"
 
       - name: "[Push] Build All for ${{ matrix.scala.name }} ${{ matrix.scala.version }} - ${{ github.run_number }}"
         if: github.event_name == 'push'
