@@ -18,35 +18,22 @@ jobs:
     strategy:
       matrix:
         scala:
-          - { name: "Scala", version: "2.13.10",  binary-version: "2.13", java-version: "17" }
+          - { name: "Scala", version: "2.13.18",  binary-version: "2.13", java-version: "17" }
         node:
-          - { version: "16.16.0" }
+          - { version: "24" }
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
+          distribution: "temurin"
           java-version: ${{ matrix.scala.java-version }}
-      - uses: actions/setup-node@v1
+          cache: "sbt"
+      - uses: sbt/setup-sbt@v1
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node.version }}
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Cache Coursier
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/coursier
-          key: ${{ runner.os }}-coursier-scala-${{ matrix.scala.binary-version }}-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('**/build.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-coursier-scala-${{ matrix.scala.binary-version }}-
-
-      - name: Cache Ivy
-        uses: actions/cache@v1
-        with:
-          path: ~/.ivy2/cache
-          key: ${{ runner.os }}-ivy-scala-${{ matrix.scala.binary-version }}-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('**/build.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-ivy-scala-${{ matrix.scala.binary-version }}-
+          cache: "npm"
 
       - name: "[Push] Build All for ${{ matrix.scala.name }} ${{ matrix.scala.version }} - ${{ github.run_number }}"
         if: github.event_name == 'push'

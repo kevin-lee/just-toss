@@ -40,7 +40,7 @@ module.exports = {
       patterns: [
         {
           from: path.resolve(__dirname, "../../../../public"),
-          globOptions: { ignore: [ "**/index.html" ] }
+          filter: (resourcePath) => path.basename(resourcePath) !== "index.html"
         }
       ]
     }),

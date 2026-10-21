@@ -77,6 +77,5 @@ hs_err_pid*
 out/
 
 ### Node
-package-lock.json
 yarn.lock
 build/

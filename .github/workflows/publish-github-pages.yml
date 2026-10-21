@@ -12,43 +12,22 @@ jobs:
     strategy:
       matrix:
         scala:
-          - { version: "2.13.10", binary-version: "2.13", java-version: "17" }
+          - { version: "2.13.18", binary-version: "2.13", java-version: "17" }
         node:
-          - { version: "16.16.0" }
+          - { version: "24" }
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
+          distribution: "temurin"
           java-version: ${{ matrix.scala.java-version }}
-      - uses: actions/setup-node@v1
+          cache: "sbt"
+      - uses: sbt/setup-sbt@v1
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node.version }}
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Cache Coursier
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/coursier
-          key: ${{ runner.os }}-coursier-scala-${{ matrix.scala.binary-version }}-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('**/build.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-coursier-scala-${{ matrix.scala.binary-version }}-
-
-      - name: Cache Ivy
-        uses: actions/cache@v1
-        with:
-          path: ~/.ivy2/cache
-          key: ${{ runner.os }}-ivy-scala-${{ matrix.scala.binary-version }}-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('**/build.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-ivy-scala-${{ matrix.scala.binary-version }}-
-
-      - name: Cache npm
-        uses: actions/cache@v1
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          cache: "npm"
 
       - name: Build and publish website
         env:
