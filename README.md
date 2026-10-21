@@ -15,7 +15,9 @@ If the site has no `http` or `https` scheme, `https://` is added.
 - Java 17 (see `.java-version`)
 - sbt
 
-The build does not use Node.js or npm. Scala.js writes `main.js`, and sbt copies it with the files in `public/` into the site folder.
+The build does not use npm. Scala.js writes `main.js`, and sbt copies it with the files in `public/` into the site folder.
+
+Node.js is only needed to run the tests, because Scala.js runs them on Node.js.
 
 ## Development
 
@@ -28,6 +30,14 @@ This builds the site into `target/dev-site`, starts a dev server and rebuilds wh
 To test the page without a redirect, use http://localhost:8888/?debug=true#example.com and open the browser console.
 
 Press Enter in sbt to stop watching for changes. The dev server stops when sbt exits.
+
+## Test
+
+```sh
+sbt test
+```
+
+The tests are in `src/test/scala/just/toss/RedirectSpec.scala` and use hedgehog. The examples there are the results of the previous implementation with `scala-uri`, so they check that the redirects stay the same.
 
 ## Production build
 
@@ -44,6 +54,7 @@ This writes the optimized site to `build/`.
 | `sbt dev` | Starts the dev server, then rebuilds on every change |
 | `sbt devBuild` | Builds the development site into `target/dev-site` once |
 | `sbt build` | Builds the production site into `build/` |
+| `sbt test` | Runs the tests |
 | `start` | Builds the development site and starts the dev server. Use it in the sbt shell, because the server stops when sbt exits |
 | `stop` | Stops the dev server |
 

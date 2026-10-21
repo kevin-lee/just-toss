@@ -29,8 +29,11 @@ lazy val justToss = (project in file("."))
     gitHubPagesOrgName := GitHubUsername,
     gitHubPagesRepoName := GitHubRepoName,
     gitHubPagesSiteDir := baseDirectory.value / "build",
-    libraryDependencies += "com.indoorvivants" %%% "scala-uri" % "4.2.0",
-    scalacOptions += "-Ymacro-annotations",
+    libraryDependencies ++= List(
+      "org.scala-js" %%% "scalajs-dom"   % "2.8.1",
+      "qa.hedgehog"  %%% "hedgehog-sbt"  % "0.15.0" % Test,
+    ),
+    testFrameworks += TestFramework("hedgehog.sbt.Framework"),
     scalaJSUseMainModuleInitializer := true,
     devSite := {
       val linkerOutputDir = (Compile / fastLinkJS / scalaJSLinkerOutputDirectory).value
