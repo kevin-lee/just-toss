@@ -8,11 +8,13 @@ A small Scala.js web page that redirects to the site in the URL fragment.
 | `https://just-toss.site/#http://example.com` | Redirects to `http://example.com` |
 | `https://just-toss.site/?debug=true#example.com` | Does not redirect. Prints the parsed values to the browser console |
 
-If the site has no `http` or `https` scheme, `https://` is added.
+- If the site has no scheme, `https://` is added. This also applies to `localhost:8080` and `user:pass@example.com`.
+- The `http` and `https` schemes can be in any case, e.g. `#HTTPS://example.com` redirects to `https://example.com/`.
+- Other schemes are not supported, so `#ftp://example.com` does not redirect.
 
 ## Requirements
 
-- Java 17 (see `.java-version`)
+- Java 17
 - sbt
 
 The build does not use npm. Scala.js writes `main.js`, and sbt copies it with the files in `public/` into the site folder.
@@ -37,7 +39,7 @@ Press Enter in sbt to stop watching for changes. The dev server stops when sbt e
 sbt test
 ```
 
-The tests are in `src/test/scala/just/toss/RedirectSpec.scala` and use hedgehog. The examples there are the results of the previous implementation with `scala-uri`, so they check that the redirects stay the same.
+The tests are in `src/test/scala/just/toss/RedirectSpec.scala` and use hedgehog. Most examples there are the results of the previous implementation with `scala-uri`, so they check that the redirects stay the same. The examples marked with "scala-uri failed" or "fixed" are the inputs where the previous implementation threw an exception or gave a wrong result.
 
 ## Production build
 

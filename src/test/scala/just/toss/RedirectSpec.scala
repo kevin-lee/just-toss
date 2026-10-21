@@ -31,7 +31,8 @@ object RedirectSpec extends Properties {
       )
 
   /** The expected outcomes are the outcomes of the previous implementation with `scala-uri`,
-    * except for the inputs marked with "scala-uri failed", where it threw an exception.
+    * except for the inputs marked with "scala-uri failed", where it threw an exception,
+    * and the inputs marked with "fixed", where it gave a wrong result.
     */
   private val examples: List[(String, Outcome)] = {
     import Outcome._
@@ -42,15 +43,20 @@ object RedirectSpec extends Properties {
       "#example.com"                                           -> GoTo("https://example.com/"),
       "#http://example.com"                                    -> GoTo("http://example.com/"),
       "#https://example.com"                                   -> GoTo("https://example.com/"),
-      "#HTTPS://example.com"                                   -> GoTo("https://https//example.com"),
+      // fixed: it was https://https//example.com
+      "#HTTPS://example.com"                                   -> GoTo("https://example.com/"),
+      "#HTTP://Example.COM/Path"                               -> GoTo("http://example.com/Path"),
       "#example.com/path?q=1&r=2#frag"                         -> GoTo("https://example.com/path?q=1&r=2#frag"),
       "#example.com:8080/a/b"                                  -> GoTo("https://example.com:8080/a/b"),
       "#localhost:8080"                                        -> GoTo("https://localhost:8080/"),
       "#user:pass@example.com"                                 -> GoTo("https://user:pass@example.com/"),
-      "#ftp://example.com"                                     -> GoTo("https://ftp//example.com"),
+      // fixed: it was https://ftp//example.com
+      "#ftp://example.com"                                     -> NoRedirect,
+      "#ws://example.com"                                      -> NoRedirect,
       "#mailto:a@b.com"                                        -> GoTo("https://mailto:a@b.com/"),
       "#javascript:alert(1)"                                   -> Fails,
       "#//example.com"                                         -> GoTo("https://example.com/"),
+      // https:///path is normalized to https://path/, so #/example.com goes to example.com.
       "#/path"                                                 -> GoTo("https://path/"),
       "#example.com/a%20b"                                     -> GoTo("https://example.com/a%20b"),
       "#example.com/a b"                                       -> GoTo("https://example.com/a%20b"),
@@ -70,7 +76,12 @@ object RedirectSpec extends Properties {
       "#example .com"                                          -> Fails,
       "#httpexample.com"                                       -> GoTo("https://httpexample.com/"),
       "#http:example.com"                                      -> GoTo("http://example.com/"),
-      "#https:/example.com"                                    -> GoTo("https://just-toss.site/example.com"),
+      // fixed: it was https://just-toss.site/example.com
+      "#https:/example.com"                                    -> GoTo("https://example.com/"),
+      "#https:example.com"                                     -> GoTo("https://example.com/"),
+      // fixed: it went to the URL with the scheme httpexample.com
+      "#httpexample.com:8080"                                  -> GoTo("https://httpexample.com:8080/"),
+      "#https://example.com:99999"                             -> NoRedirect,
       "?debug=true#example.com"                                -> NoRedirect,
       "?debug=false#example.com"                               -> GoTo("https://example.com/"),
       "?debug=TRUE#example.com"                                -> GoTo("https://example.com/"),
@@ -107,6 +118,8 @@ object RedirectSpec extends Properties {
     } ++ List(
       property("A domain without a scheme redirects to https", propDomainWithoutScheme),
       property("A site with http or https keeps its scheme", propHttpScheme),
+      property("A site with http or https in any case keeps its scheme in lower case", propHttpSchemeInAnyCase),
+      property("A redirect always goes to an http or https URL", propOnlyHttp),
       property("debug=true never redirects", propDebugMode),
       property("Any fragment never throws an exception", propAnyFragment),
       property("percentDecode decodes what encodeURIComponent encodes", propPercentDecode),
@@ -126,6 +139,40 @@ object RedirectSpec extends Properties {
     } yield outcome(locationOf(s"#$scheme://$domain$path")) ==== Outcome.GoTo(
       s"$scheme://$domain${if (path.isEmpty) "/" else path}"
     )
+
+  def propHttpSchemeInAnyCase: Property =
+    for {
+      scheme <- Gen.element1("http", "https").forAll
+      upper  <- Gen.boolean.list(Range.singleton(scheme.length)).forAll
+      domain <- genDomain.forAll
+    } yield {
+      val anyCase = scheme.zip(upper).map { case (c, isUpper) => if (isUpper) c.toUpper else c }.mkString
+      outcome(locationOf(s"#$anyCase://$domain")) ==== Outcome.GoTo(s"$scheme://$domain/")
+    }
+
+  def propOnlyHttp: Property =
+    for {
+      prefix <- Gen
+                  .element1(
+                    "",
+                    "http:",
+                    "HTTPS://",
+                    "ftp://",
+                    "javascript:",
+                    "JavaScript://",
+                    "data:text/html,",
+                    "file:///",
+                    "//",
+                    "localhost:",
+                  )
+                  .forAll
+      text   <- genText.forAll
+    } yield outcome(locationOf(s"#$prefix${URIUtils.encodeURIComponent(text)}")) match {
+      case Outcome.GoTo(href) =>
+        Result.assert(href.startsWith("http://") || href.startsWith("https://")).log(s"href: $href")
+      case Outcome.NoRedirect | Outcome.Fails =>
+        Result.success
+    }
 
   def propDebugMode: Property =
     for {
