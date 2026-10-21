@@ -3,6 +3,7 @@ package just.toss
 import org.scalajs.dom.URL
 
 import java.nio.charset.StandardCharsets
+import scala.util.Try
 import scala.util.matching.Regex
 
 /** Finds the site to redirect to from the location of the page.
@@ -18,6 +19,8 @@ object Redirect {
   private val PercentEncodedBytes = "(?:%[0-9A-Fa-f]{2})+".r
 
   private val Scheme = "^([A-Za-z][A-Za-z0-9+.-]*):".r
+
+  private val HttpScheme = "(?i)https?".r
 
   /** Decodes percent-encoded UTF-8 bytes.
     *
@@ -36,16 +39,25 @@ object Redirect {
         ),
     )
 
-  /** Adds `https://` to the site if it does not have a scheme that starts with `http`. */
-  def toSite(fragment: String): String =
-    if (Scheme.findFirstMatchIn(fragment).exists(_.group(1).startsWith("http"))) fragment
-    else s"https://$fragment"
+  /** Finds the site from the fragment.
+    *
+    *   - A site with the `http` or `https` scheme (in any case) is normalized as an absolute URL
+    *     (e.g. `HTTPS:/example.com` becomes `https://example.com/`). If it is not a valid URL, there is no site.
+    *   - A site with another scheme followed by `//` (e.g. `ftp://example.com`) is not supported, so there is no site.
+    *   - Any other site gets `https://` (e.g. `example.com`, `localhost:8080` and `user:pass@example.com`).
+    */
+  def toSite(fragment: String): Option[String] =
+    Scheme.findFirstMatchIn(fragment) match {
+      case Some(scheme) if HttpScheme.matches(scheme.group(1)) => Try(new URL(fragment).href).toOption
+      case Some(scheme) if fragment.startsWith("//", scheme.end) => None
+      case _ => Some(s"https://$fragment")
+    }
 
   def request(location: String): Request = {
     val url       = new URL(location)
     val fragment  = percentDecode(url.hash.stripPrefix("#"))
     val debugMode = Option(url.searchParams.get("debug")).contains("true")
-    Request(location, fragment, debugMode, Option(fragment).filter(_.trim.nonEmpty).map(toSite))
+    Request(location, fragment, debugMode, Option(fragment).filter(_.trim.nonEmpty).flatMap(toSite))
   }
 
   /** The site to redirect to. It is `None` if there is no site or if it is in debug mode. */
