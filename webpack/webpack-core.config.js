@@ -4,6 +4,9 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   mode: "development",
+  performance: {
+    hints: false,
+  },
   resolve: {
     alias: {
       "resources": path.resolve(__dirname, "../../../../src/main/resources"),
@@ -35,7 +38,10 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin({
       patterns: [
-        { from: path.resolve(__dirname, "../../../../public") }
+        {
+          from: path.resolve(__dirname, "../../../../public"),
+          globOptions: { ignore: [ "**/index.html" ] }
+        }
       ]
     }),
     new HtmlWebpackPlugin({

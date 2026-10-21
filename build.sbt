@@ -5,7 +5,7 @@ lazy val GitHubRepoName = "just-toss"
 
 name := GitHubRepoName
 
-scalaVersion := "2.13.10"
+scalaVersion := "2.13.18"
 
 lazy val start = TaskKey[Unit]("start")
 lazy val stop = TaskKey[Unit]("stop")
@@ -19,25 +19,29 @@ lazy val justToss = (project in file("."))
     gitHubPagesRepoName := GitHubRepoName,
     gitHubPagesSiteDir := baseDirectory.value / "build",
     (Compile / npmDevDependencies) ++= List(
-      "html-webpack-plugin" -> "4.5.1",
-      "copy-webpack-plugin" -> "6.4.0",
+//      "html-webpack-plugin" -> "4.5.1",
+//      "copy-webpack-plugin" -> "6.4.0",
+//      "webpack-merge" -> "5.8.0",
+      "html-webpack-plugin" -> "5.5.0",
+      "copy-webpack-plugin" -> "6.4.1",
       "webpack-merge" -> "5.8.0",
     ),
     libraryDependencies += "io.lemonlabs" %%% "scala-uri" % "4.0.2",
     scalacOptions += "-Ymacro-annotations",
-    (webpack / version) := "4.44.2",
-//    (webpack / version) := "5.64.2",
+//    (webpack / version) := "4.44.2",
+    (webpack / version) := "5.75.0",
+    webpackCliVersion := "5.0.1",
 //    webpackCliVersion := "4.9.1",
-    (startWebpackDevServer / version) := "4.5.0",
-//    (startWebpackDevServer / version) := "4.11.1",
+//    (startWebpackDevServer / version) := "4.5.0",
+    (startWebpackDevServer / version) := "4.11.1",
     webpackResources := baseDirectory.value / "webpack" * "*",
-//    useYarn := true,
+    useYarn := true,
     webpackDevServerPort := 8888,
     webpackDevServerExtraArgs := Seq("--host", "0.0.0.0"),
     (fastOptJS / webpackConfigFile) := (baseDirectory.value / "webpack" / "webpack-fastopt.config.js").some,
     (fullOptJS / webpackConfigFile) := (baseDirectory.value / "webpack" / "webpack-opt.config.js").some,
     (Test / webpackConfigFile) := (baseDirectory.value / "webpack" / "webpack-core.config.js").some,
-    (fastOptJS / webpackDevServerExtraArgs) := Seq("--inline", "--hot"),
+    (fastOptJS / webpackDevServerExtraArgs) := Seq("--hot"),
     (fastOptJS / webpackBundlingMode) := BundlingMode.LibraryOnly(),
     (Test / requireJsDomEnv) := true,
     addCommandAlias("dev", ";fastOptJS::startWebpackDevServer;~fastOptJS"),
