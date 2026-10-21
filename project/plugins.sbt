@@ -1,9 +1,6 @@
 addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "1.22.0")
 //addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.1.0")
 
-//addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.21.0")
-addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.21.1")
-
 addSbtPlugin("io.kevinlee" % "sbt-github-pages" % "0.21.0")
 
 val ScalaDevOopsVersion = "3.9.0"

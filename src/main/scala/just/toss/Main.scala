@@ -3,12 +3,9 @@ package just.toss
 import org.scalajs.dom
 import org.scalajs.dom.Event
 
-import scala.scalajs.js.annotation.JSExportTopLevel
-
 object Main {
 
-  @JSExportTopLevel("main")
-  def main(): Unit = {
+  def main(args: Array[String]): Unit = {
 
     val relocate: Event => Unit = event => {
       import io.lemonlabs.uri._

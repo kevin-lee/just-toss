@@ -76,6 +76,5 @@ hs_err_pid*
 # IntelliJ
 out/
 
-### Node
-yarn.lock
+### Site
 build/
